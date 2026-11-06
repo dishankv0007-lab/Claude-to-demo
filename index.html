@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF0F3; --surface:#FFFFFF; --ink:#16212B; --muted:#64727F; --line:#E1E8ED;
+  --accent:#0E6B5C; --accent-ink:#FFFFFF; --accent-soft:#E2F2EE;
+  --hi:#C2410C; --mid:#A16207; --lo:#5B7083; --danger:#B42318;
+  --shadow:0 1px 2px rgba(22,33,43,.06),0 12px 32px -12px rgba(22,33,43,.18);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0E151B; --surface:#161F27; --ink:#E8EEF2; --muted:#8D9CA8; --line:#243240;
+    --accent:#3FB59F; --accent-ink:#06211C; --accent-soft:#16302B;
+    --hi:#F08A5D; --mid:#E0B14C; --lo:#8FA3B5; --danger:#F27A6E;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px -12px rgba(0,0,0,.6);
+  }
+}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--ink);min-height:100vh;
+  display:flex;justify-content:center;padding:48px 16px 80px;line-height:1.5;
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.app{width:100%;max-width:640px}
+
+/* Header */
+.head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
+.head h1{font-size:clamp(28px,6vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.head p{color:var(--muted);font-size:14px;margin-top:6px}
+.ring{position:relative;width:72px;height:72px;flex:none}
+.ring svg{width:72px;height:72px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6}
+.ring .track{stroke:var(--line)}
+.ring .bar{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:188.5;stroke-dashoffset:188.5;transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:16px;letter-spacing:-.02em}
+
+/* Card */
+.card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.add{padding:16px;border-bottom:1px solid var(--line);display:grid;gap:12px}
+.add-main{display:flex;gap:10px}
+.add input[type=text]{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px 14px;font-size:15px}
+.add input[type=text]::placeholder{color:var(--muted)}
+.add input[type=text]:focus{outline:2px solid var(--accent);outline-offset:0;background:var(--surface)}
+.btn{background:var(--accent);color:var(--accent-ink);font-weight:700;padding:0 20px;border-radius:12px;font-size:15px;transition:transform .1s,filter .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:scale(.97)}
+.add-opts{display:flex;gap:10px;flex-wrap:wrap}
+.add-opts label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:500}
+.add-opts select,.add-opts input[type=date]{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 10px;font-size:13px;color:var(--ink)}
+
+/* Toolbar */
+.bar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:3px}
+.seg button{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);transition:background .15s,color .15s}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(22,33,43,.15)}
+.search{flex:1;min-width:120px;max-width:220px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 12px;font-size:13px}
+
+/* List */
+ul{list-style:none;padding:0;margin:0}
+.item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);animation:in .2s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.check{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;transition:all .15s;background:var(--surface)}
+.check:hover{border-color:var(--accent)}
+.check svg{width:12px;height:12px;stroke:var(--accent-ink);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.5);transition:all .15s}
+.item.done .check{background:var(--accent);border-color:var(--accent)}
+.item.done .check svg{opacity:1;transform:none}
+.body{flex:1;min-width:0}
+.title{font-size:15px;font-weight:500;overflow-wrap:anywhere;cursor:text}
+.item.done .title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.meta{display:flex;gap:10px;align-items:center;margin-top:3px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.pri{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.pri::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pri.high{color:var(--hi)} .pri.medium{color:var(--mid)} .pri.low{color:var(--lo)}
+.item.done .pri{opacity:.5}
+.overdue{color:var(--danger);font-weight:600}
+.edit{width:100%;border:1px solid var(--accent);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:15px}
+.acts{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.item:hover .acts,.item:focus-within .acts{opacity:1}
+@media (hover:none){.acts{opacity:1}}
+.icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+.icon:hover{background:var(--bg);color:var(--ink)}
+.icon.del:hover{color:var(--danger)}
+.icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.empty{padding:48px 24px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.foot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-size:13px;color:var(--muted)}
+.foot button{font-weight:600;color:var(--muted);padding:4px 8px;border-radius:8px}
+.foot button:hover{color:var(--danger)}
+.foot button:disabled{opacity:.4;pointer-events:none}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 12px 10px 16px;border-radius:12px;display:flex;gap:14px;align-items:center;font-size:14px;opacity:0;pointer-events:none;transition:all .25s;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{color:var(--accent);font-weight:700;filter:brightness(1.3);padding:2px 6px}
+
+@media (max-width:480px){
+  body{padding-top:28px}
+  .add-main{flex-direction:column}
+  .btn{padding:12px}
+  .search{max-width:none;order:3;flex-basis:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="head">
+    <div>
+      <h1 id="greeting">Today</h1>
+      <p id="summary"></p>
+    </div>
+    <div class="ring" role="img" aria-label="Completion progress">
+      <svg viewBox="0 0 72 72"><circle class="track" cx="36" cy="36" r="30"/><circle class="bar" id="ringBar" cx="36" cy="36" r="30"/></svg>
+      <span id="pct">0%</span>
+    </div>
+  </header>
+
+  <section class="card">
+    <form class="add" id="addForm" autocomplete="off">
+      <div class="add-main">
+        <input type="text" id="newText" placeholder="Add a task" aria-label="New task" maxlength="200" required>
+        <button class="btn" type="submit">Add task</button>
+      </div>
+      <div class="add-opts">
+        <label>Priority
+          <select id="newPri"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
+        </label>
+        <label>Due
+          <input type="date" id="newDue">
+        </label>
+      </div>
+    </form>
+
+    <div class="bar">
+      <div class="seg" role="group" aria-label="Filter tasks">
+        <button type="button" data-f="all" aria-pressed="true">All</button>
+        <button type="button" data-f="active" aria-pressed="false">Active</button>
+        <button type="button" data-f="done" aria-pressed="false">Completed</button>
+      </div>
+      <input class="search" id="search" type="search" placeholder="Search tasks" aria-label="Search tasks">
+    </div>
+
+    <ul id="list"></ul>
+
+    <div class="foot">
+      <span id="count"></span>
+      <button type="button" id="clearDone">Clear completed</button>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="undo">Undo</button></div>
+
+<script>
+(function(){
+  var KEY = "tasks.v1";
+  var tasks = load();
+  var filter = "all", query = "", editingId = null, lastDeleted = null, toastTimer;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var list = $("list"), form = $("addForm"), newText = $("newText"), newPri = $("newPri"), newDue = $("newDue");
+  var ICON_CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
+  var ICON_EDIT = '<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
+  var ICON_DEL = '<svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>';
+
+  function load(){
+    try { var d = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(d) ? d : []; }
+    catch(e){ return []; }
+  }
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch(e){}
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function todayStr(){
+    var d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0,10);
+  }
+  function fmtDate(s){
+    var p = s.split("-");
+    return new Date(+p[0], +p[1]-1, +p[2]).toLocaleDateString(undefined, {month:"short", day:"numeric"});
+  }
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function iconBtn(cls, label, svg, onClick){
+    var b = el("button", "icon " + cls);
+    b.type = "button"; b.setAttribute("aria-label", label); b.innerHTML = svg;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function render(){
+    var q = query.trim().toLowerCase();
+    var shown = tasks.filter(function(t){
+      if (filter === "active" && t.done) return false;
+      if (filter === "done" && !t.done) return false;
+      return !q || t.text.toLowerCase().indexOf(q) !== -1;
+    });
+    list.innerHTML = "";
+    shown.forEach(function(t){ list.appendChild(row(t)); });
+
+    if (!shown.length){
+      var e = el("li", "empty");
+      var msg = tasks.length === 0
+        ? ["Nothing here yet", "Add your first task above to get started."]
+        : q ? ["No matches", "Try a different search term."]
+        : filter === "done" ? ["Nothing completed yet", "Finished tasks will show up here."]
+        : ["All clear", "You have no active tasks."];
+      e.appendChild(el("strong", null, msg[0])); e.appendChild(document.createTextNode(msg[1]));
+      list.appendChild(e);
+    }
+
+    var done = tasks.filter(function(t){ return t.done; }).length;
+    var active = tasks.length - done;
+    var pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+    $("pct").textContent = pct + "%";
+    $("ringBar").style.strokeDashoffset = 188.5 * (1 - pct / 100);
+    $("summary").textContent = tasks.length
+      ? (active ? active + (active === 1 ? " task" : " tasks") + " left" : "Everything is done") + " · " + done + " completed"
+      : "Plan your day, one task at a time.";
+    $("count").textContent = active + (active === 1 ? " task" : " tasks") + " remaining";
+    $("clearDone").disabled = done === 0;
+  }
+
+  function row(t){
+    var li = el("li", "item" + (t.done ? " done" : ""));
+    var chk = el("button", "check"); chk.type = "button";
+    chk.setAttribute("role", "checkbox"); chk.setAttribute("aria-checked", String(t.done));
+    chk.setAttribute("aria-label", "Mark \"" + t.text + "\" as " + (t.done ? "not done" : "done"));
+    chk.innerHTML = ICON_CHECK;
+    chk.addEventListener("click", function(){ t.done = !t.done; save(); render(); });
+    li.appendChild(chk);
+
+    var body = el("div", "body");
+    if (editingId === t.id){
+      var inp = el("input", "edit"); inp.type = "text"; inp.value = t.text; inp.maxLength = 200;
+      inp.setAttribute("aria-label", "Edit task");
+      var finished = false;
+      var commit = function(){
+        if (finished) return; finished = true;
+        var v = inp.value.trim();
+        if (v) t.text = v;
+        editingId = null; save(); render();
+      };
+      inp.addEventListener("keydown", function(e){
+        if (e.key === "Enter") commit();
+        if (e.key === "Escape"){ finished = true; editingId = null; render(); }
+      });
+      inp.addEventListener("blur", commit);
+      body.appendChild(inp);
+      setTimeout(function(){ inp.focus(); inp.select(); }, 0);
+    } else {
+      var title = el("div", "title", t.text);
+      title.addEventListener("dblclick", function(){ editingId = t.id; render(); });
+      body.appendChild(title);
+    }
+    var meta = el("div", "meta");
+    meta.appendChild(el("span", "pri " + t.priority, t.priority.charAt(0).toUpperCase() + t.priority.slice(1)));
+    if (t.due){
+      var late = !t.done && t.due < todayStr();
+      meta.appendChild(el("span", late ? "overdue" : "", (late ? "Overdue · " : "Due ") + fmtDate(t.due)));
+    }
+    body.appendChild(meta);
+    li.appendChild(body);
+
+    var acts = el("div", "acts");
+    acts.appendChild(iconBtn("", "Edit task", ICON_EDIT, function(){ editingId = t.id; render(); }));
+    acts.appendChild(iconBtn("del", "Delete task", ICON_DEL, function(){ remove(t.id); }));
+    li.appendChild(acts);
+    return li;
+  }
+
+  function remove(id){
+    var i = tasks.findIndex(function(t){ return t.id === id; });
+    if (i < 0) return;
+    lastDeleted = { task: tasks[i], index: i };
+    tasks.splice(i, 1); save(); render();
+    toast("Task deleted");
+  }
+  function toast(msg){
+    $("toastMsg").textContent = msg;
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ $("toast").classList.remove("show"); lastDeleted = null; }, 5000);
+  }
+
+  $("undo").addEventListener("click", function(){
+    if (!lastDeleted) return;
+    tasks.splice(lastDeleted.index, 0, lastDeleted.task);
+    lastDeleted = null; save(); render();
+    $("toast").classList.remove("show");
+  });
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = newText.value.trim();
+    if (!v) return;
+    tasks.unshift({ id: uid(), text: v, done: false, priority: newPri.value, due: newDue.value || "" });
+    newText.value = ""; newDue.value = "";
+    save(); render(); newText.focus();
+  });
+
+  document.querySelectorAll(".seg button").forEach(function(b){
+    b.addEventListener("click", function(){
+      filter = b.dataset.f;
+      document.querySelectorAll(".seg button").forEach(function(x){ x.setAttribute("aria-pressed", String(x === b)); });
+      render();
+    });
+  });
+  $("search").addEventListener("input", function(e){ query = e.target.value; render(); });
+  $("clearDone").addEventListener("click", function(){
+    tasks = tasks.filter(function(t){ return !t.done; }); save(); render();
+  });
+
+  var h = new Date().getHours();
+  $("greeting").textContent = (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening");
+  document.title = "Tasks · " + new Date().toLocaleDateString(undefined, {weekday:"long", month:"short", day:"numeric"});
+  render();
+})();
+</script>
+</body>
+</html>
